@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/*
+ * Global overrides.  Tailwind’s preflight provides a sensible
+ * foundation; here we ensure the body uses the same neutral background as
+ * our page wrapper, keeping the experience consistent across reloads.
+ * Use `@layer base` so that Tailwind utilities are available when
+ * applying classes via `@apply`【386766081927269†L349-L357】.  Without this layer,
+ * Tailwind will not recognise utility classes in arbitrary CSS.
+ */
+@layer base {
+  html,
+  body {
+    @apply bg-gray-50;
+  }
+}
