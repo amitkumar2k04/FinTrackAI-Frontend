@@ -4,40 +4,22 @@ import { pageEnterFromRight, pageExitToLeft } from '../animations/pageTransition
 import ChatHistory from '../components/Chat/ChatHistory.jsx';
 import ChatInput from '../components/Chat/ChatInput.jsx';
 
-/**
- * ChatPage presents the conversational interface on its own route.  The
- * layout consists of a scrollable history area and an input area at the
- * bottom.  Messages animate into view using GSAP when they are added to
- * the history.  A separate animation module handles page transitions.
- */
 function ChatPage() {
   const [userInput, setUserInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const chatContainerRef = useRef(null);
   const pageWrapperRef = useRef(null);
-
-  // Animate the page sliding in from the right on mount and out to the left
-  // when unmounting.  The exit animation runs asynchronously but will
-  // not block route navigation in this simple setup.
+  
   useEffect(() => {
     const el = pageWrapperRef.current;
     const enterTl = pageEnterFromRight(el);
     return () => {
-      // Trigger exit animation; we don't await its completion since
-      // React unmounts the component immediately.  In more advanced
-      // setups you could hook into route transitions to delay navigation
-      // until the animation finishes.
       pageExitToLeft(el);
       enterTl?.kill();
     };
   }, []);
 
-  /**
-   * Sends the current user input to the backend and updates the chat
-   * history.  A typing indicator is displayed while waiting for the
-   * response.  Errors are surfaced as assistant messages.
-   */
   const handleSendMessage = async (event) => {
     event.preventDefault();
     const trimmed = userInput.trim();
@@ -48,7 +30,10 @@ function ChatPage() {
     setLoading(true);
     try {
       const response = await axios.post('/api/finance', { question: trimmed });
-      const reply = response?.data?.reply ?? 'No response';
+      const reply = response?.data?.reply;
+      if (!reply) {
+        throw new Error('Invalid response from server');
+      }
       const botMsg = { id: Date.now() + 1, text: reply, sender: 'ai' };
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
